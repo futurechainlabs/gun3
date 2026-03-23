@@ -502,8 +502,61 @@
       `).join('');
     }
 
-    // --- Init: check saved session ---
+    // --- Handle email confirmation redirect ---
+    async function handleEmailConfirmation() {
+      const params = new URLSearchParams(window.location.search);
+      const confirmationUrl = params.get('confirmation_url');
+      if (confirmationUrl) {
+        // Call the Supabase confirmation URL in the background
+        const res = await fetch(confirmationUrl, { redirect: 'follow' });
+        // Clean up the URL
+        window.history.replaceState({}, '', window.location.pathname);
+
+        // Check if we got tokens in the hash after redirect
+        if (window.location.hash) {
+          return handleHashTokens();
+        }
+
+        showMsg('E-postaniz onaylandi! Simdi giris yapabilirsiniz.', 'success');
+        return true;
+      }
+
+      // Handle hash-based token response (Supabase redirects with #access_token=...)
+      if (window.location.hash && window.location.hash.includes('access_token')) {
+        return handleHashTokens();
+      }
+
+      return false;
+    }
+
+    function handleHashTokens() {
+      const hash = window.location.hash.substring(1);
+      const params = new URLSearchParams(hash);
+      const accessToken = params.get('access_token');
+      const refreshTokenVal = params.get('refresh_token');
+
+      if (accessToken) {
+        // Decode the JWT to get user info
+        const payload = JSON.parse(atob(accessToken.split('.')[1]));
+        session = {
+          access_token: accessToken,
+          refresh_token: refreshTokenVal,
+          user: { id: payload.sub, email: payload.email }
+        };
+        localStorage.setItem('sb_session', JSON.stringify(session));
+        window.history.replaceState({}, '', window.location.pathname);
+        showTodoScreen();
+        return true;
+      }
+      return false;
+    }
+
+    // --- Init ---
     (async function init() {
+      // First check for email confirmation or hash tokens
+      if (await handleEmailConfirmation()) return;
+
+      // Then check for saved session
       const saved = localStorage.getItem('sb_session');
       if (saved) {
         session = JSON.parse(saved);
