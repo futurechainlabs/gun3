@@ -29,6 +29,108 @@
       color: #e94560;
     }
 
+    /* Auth styles */
+    .auth-box {
+      background: #16213e;
+      border-radius: 12px;
+      padding: 32px 24px;
+    }
+
+    .auth-box h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #e94560;
+      font-size: 1.3rem;
+    }
+
+    .auth-box input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #0f3460;
+      border-radius: 8px;
+      background: #1a1a2e;
+      color: #eee;
+      font-size: 1rem;
+      outline: none;
+      margin-bottom: 12px;
+      transition: border-color 0.2s;
+    }
+
+    .auth-box input:focus {
+      border-color: #e94560;
+    }
+
+    .auth-box .btn {
+      width: 100%;
+      padding: 12px;
+      background: #e94560;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-bottom: 12px;
+    }
+
+    .auth-box .btn:hover { background: #c73651; }
+    .auth-box .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .auth-toggle {
+      text-align: center;
+      color: #aaa;
+      font-size: 0.9rem;
+    }
+
+    .auth-toggle a {
+      color: #e94560;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .msg {
+      text-align: center;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      font-size: 0.9rem;
+    }
+
+    .msg.error { background: #3a1525; color: #ff6b8a; }
+    .msg.success { background: #153a25; color: #6bff8a; }
+
+    /* Header bar */
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .header-bar h1 { margin-bottom: 0; }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+
+    .logout-btn {
+      padding: 6px 12px;
+      background: #0f3460;
+      color: #aaa;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+
+    .logout-btn:hover { background: #e94560; color: #fff; }
+
+    /* Todo styles */
     .input-row {
       display: flex;
       gap: 8px;
@@ -47,9 +149,7 @@
       transition: border-color 0.2s;
     }
 
-    .input-row input:focus {
-      border-color: #e94560;
-    }
+    .input-row input:focus { border-color: #e94560; }
 
     .input-row button {
       padding: 12px 20px;
@@ -62,9 +162,7 @@
       transition: background 0.2s;
     }
 
-    .input-row button:hover {
-      background: #c73651;
-    }
+    .input-row button:hover { background: #c73651; }
 
     .filters {
       display: flex;
@@ -90,9 +188,7 @@
       border-color: #0f3460;
     }
 
-    ul {
-      list-style: none;
-    }
+    ul { list-style: none; }
 
     li {
       display: flex;
@@ -105,10 +201,7 @@
       transition: opacity 0.2s;
     }
 
-    li.done span {
-      text-decoration: line-through;
-      opacity: 0.5;
-    }
+    li.done span { text-decoration: line-through; opacity: 0.5; }
 
     li input[type="checkbox"] {
       width: 20px;
@@ -117,10 +210,7 @@
       cursor: pointer;
     }
 
-    li span {
-      flex: 1;
-      font-size: 1rem;
-    }
+    li span { flex: 1; font-size: 1rem; }
 
     li .delete-btn {
       background: none;
@@ -131,71 +221,233 @@
       transition: color 0.2s;
     }
 
-    li .delete-btn:hover {
-      color: #e94560;
-    }
+    li .delete-btn:hover { color: #e94560; }
 
     .empty {
       text-align: center;
       color: #555;
       margin-top: 32px;
     }
+
+    .hidden { display: none; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Todo App</h1>
 
-    <div class="input-row">
-      <input type="text" id="todoInput" placeholder="Yeni gorev ekle...">
-      <button onclick="addTodo()">Ekle</button>
+    <!-- Auth Screen -->
+    <div id="authScreen">
+      <h1>Todo App</h1>
+      <div class="auth-box">
+        <h2 id="authTitle">Giris Yap</h2>
+        <div id="authMsg" class="hidden"></div>
+        <input type="email" id="emailInput" placeholder="E-posta adresi">
+        <input type="password" id="passwordInput" placeholder="Sifre (min 6 karakter)">
+        <button class="btn" id="authBtn" onclick="handleAuth()">Giris Yap</button>
+        <p class="auth-toggle">
+          <span id="toggleText">Hesabin yok mu?</span>
+          <a id="toggleLink" onclick="toggleAuthMode()">Kayit Ol</a>
+        </p>
+      </div>
     </div>
 
-    <div class="filters">
-      <button class="active" onclick="setFilter('all', this)">Tumu</button>
-      <button onclick="setFilter('active', this)">Aktif</button>
-      <button onclick="setFilter('done', this)">Tamamlanan</button>
+    <!-- Todo Screen -->
+    <div id="todoScreen" class="hidden">
+      <div class="header-bar">
+        <h1>Todo App</h1>
+        <div class="user-info">
+          <span id="userEmail"></span>
+          <button class="logout-btn" onclick="logout()">Cikis</button>
+        </div>
+      </div>
+
+      <div class="input-row">
+        <input type="text" id="todoInput" placeholder="Yeni gorev ekle...">
+        <button onclick="addTodo()">Ekle</button>
+      </div>
+
+      <div class="filters">
+        <button class="active" onclick="setFilter('all', this)">Tumu</button>
+        <button onclick="setFilter('active', this)">Aktif</button>
+        <button onclick="setFilter('done', this)">Tamamlanan</button>
+      </div>
+
+      <ul id="todoList"></ul>
     </div>
 
-    <ul id="todoList"></ul>
   </div>
 
   <script>
     const SUPABASE_URL = 'https://tbucmnjcmixwxajfavbi.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidWNtbmpjbWl4d3hhamZhdmJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyODI4OTAsImV4cCI6MjA4OTg1ODg5MH0.2haD4ecIdtmrXMgXmYnYdxgT2YOsjvlbcvTlSiFm-4M';
     const API = `${SUPABASE_URL}/rest/v1/todos`;
-    const headers = {
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=representation'
-    };
+    const AUTH = `${SUPABASE_URL}/auth/v1`;
 
     let todos = [];
     let filter = 'all';
+    let isLogin = true;
+    let session = null;
 
-    const input = document.getElementById('todoInput');
+    const authScreen = document.getElementById('authScreen');
+    const todoScreen = document.getElementById('todoScreen');
+    const authMsg = document.getElementById('authMsg');
+    const emailInput = document.getElementById('emailInput');
+    const passwordInput = document.getElementById('passwordInput');
+    const todoInput = document.getElementById('todoInput');
     const list = document.getElementById('todoList');
 
-    input.addEventListener('keydown', e => {
-      if (e.key === 'Enter') addTodo();
-    });
+    passwordInput.addEventListener('keydown', e => { if (e.key === 'Enter') handleAuth(); });
+    todoInput.addEventListener('keydown', e => { if (e.key === 'Enter') addTodo(); });
+
+    // --- Auth ---
+
+    function showMsg(text, type) {
+      authMsg.textContent = text;
+      authMsg.className = `msg ${type}`;
+      authMsg.classList.remove('hidden');
+    }
+
+    function hideMsg() {
+      authMsg.classList.add('hidden');
+    }
+
+    function toggleAuthMode() {
+      isLogin = !isLogin;
+      hideMsg();
+      document.getElementById('authTitle').textContent = isLogin ? 'Giris Yap' : 'Kayit Ol';
+      document.getElementById('authBtn').textContent = isLogin ? 'Giris Yap' : 'Kayit Ol';
+      document.getElementById('toggleText').textContent = isLogin ? 'Hesabin yok mu?' : 'Zaten hesabin var mi?';
+      document.getElementById('toggleLink').textContent = isLogin ? 'Kayit Ol' : 'Giris Yap';
+    }
+
+    async function handleAuth() {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      hideMsg();
+
+      if (!email || !password) {
+        showMsg('E-posta ve sifre gerekli.', 'error');
+        return;
+      }
+      if (password.length < 6) {
+        showMsg('Sifre en az 6 karakter olmali.', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('authBtn');
+      btn.disabled = true;
+
+      if (isLogin) {
+        const res = await fetch(`${AUTH}/token?grant_type=password`, {
+          method: 'POST',
+          headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        btn.disabled = false;
+
+        if (data.error) {
+          const msg = data.error_description || data.msg || data.error;
+          if (msg.includes('Email not confirmed')) {
+            showMsg('E-postanizi onaylamaniz gerekiyor. Gelen kutunuzu kontrol edin.', 'error');
+          } else if (msg.includes('Invalid login credentials')) {
+            showMsg('E-posta veya sifre hatali.', 'error');
+          } else {
+            showMsg(msg, 'error');
+          }
+          return;
+        }
+
+        session = data;
+        localStorage.setItem('sb_session', JSON.stringify(data));
+        showTodoScreen();
+      } else {
+        const res = await fetch(`${AUTH}/signup`, {
+          method: 'POST',
+          headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        btn.disabled = false;
+
+        if (data.error) {
+          showMsg(data.error_description || data.msg || data.error, 'error');
+          return;
+        }
+
+        showMsg('Kayit basarili! Lutfen e-postaniza gelen onay linkine tiklayin.', 'success');
+        emailInput.value = '';
+        passwordInput.value = '';
+      }
+    }
+
+    function getAuthHeaders() {
+      return {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      };
+    }
+
+    async function refreshToken() {
+      if (!session || !session.refresh_token) return false;
+      const res = await fetch(`${AUTH}/token?grant_type=refresh_token`, {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: session.refresh_token })
+      });
+      if (!res.ok) return false;
+      session = await res.json();
+      localStorage.setItem('sb_session', JSON.stringify(session));
+      return true;
+    }
+
+    function showTodoScreen() {
+      authScreen.classList.add('hidden');
+      todoScreen.classList.remove('hidden');
+      document.getElementById('userEmail').textContent = session.user.email;
+      fetchTodos();
+    }
+
+    function logout() {
+      session = null;
+      todos = [];
+      localStorage.removeItem('sb_session');
+      todoScreen.classList.add('hidden');
+      authScreen.classList.remove('hidden');
+      hideMsg();
+      emailInput.value = '';
+      passwordInput.value = '';
+    }
+
+    // --- Todos ---
 
     async function fetchTodos() {
-      const res = await fetch(`${API}?order=created_at.asc`, { headers });
+      const res = await fetch(`${API}?order=created_at.asc`, { headers: getAuthHeaders() });
+      if (res.status === 401) {
+        if (await refreshToken()) return fetchTodos();
+        logout();
+        return;
+      }
       todos = await res.json();
       render();
     }
 
     async function addTodo() {
-      const text = input.value.trim();
+      const text = todoInput.value.trim();
       if (!text) return;
-      input.value = '';
+      todoInput.value = '';
       const res = await fetch(API, {
         method: 'POST',
-        headers,
-        body: JSON.stringify({ text, done: false })
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ text, done: false, user_id: session.user.id })
       });
+      if (res.status === 401) {
+        if (await refreshToken()) return addTodo();
+        logout();
+        return;
+      }
       const [newTodo] = await res.json();
       todos.push(newTodo);
       render();
@@ -208,7 +460,7 @@
       render();
       await fetch(`${API}?id=eq.${id}`, {
         method: 'PATCH',
-        headers,
+        headers: getAuthHeaders(),
         body: JSON.stringify({ done: todo.done })
       });
     }
@@ -218,7 +470,7 @@
       render();
       await fetch(`${API}?id=eq.${id}`, {
         method: 'DELETE',
-        headers
+        headers: getAuthHeaders()
       });
     }
 
@@ -250,7 +502,18 @@
       `).join('');
     }
 
-    fetchTodos();
+    // --- Init: check saved session ---
+    (async function init() {
+      const saved = localStorage.getItem('sb_session');
+      if (saved) {
+        session = JSON.parse(saved);
+        if (await refreshToken()) {
+          showTodoScreen();
+        } else {
+          logout();
+        }
+      }
+    })();
   </script>
 </body>
 </html>
