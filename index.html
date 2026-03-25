@@ -4,76 +4,117 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Todo App</title>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #1a1a2e;
+      background: #0a0a1a;
       color: #eee;
       min-height: 100vh;
       display: flex;
       justify-content: center;
       padding: 40px 16px;
+      overflow-x: hidden;
+    }
+
+    .bg-particles {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0;
     }
 
     .container {
       width: 100%;
       max-width: 500px;
+      position: relative;
+      z-index: 1;
     }
 
     h1 {
       text-align: center;
       margin-bottom: 24px;
-      font-size: 2rem;
+      font-size: 2.5rem;
       color: #e94560;
+      letter-spacing: 2px;
+      text-shadow: 0 0 30px rgba(233, 69, 96, 0.5);
     }
 
-    /* Auth styles */
+    .glow-line {
+      width: 0;
+      height: 3px;
+      margin: -16px auto 24px;
+      background: linear-gradient(90deg, transparent, #e94560, #0f3460, transparent);
+      border-radius: 2px;
+      box-shadow: 0 0 15px rgba(233, 69, 96, 0.6);
+    }
+
     .auth-box {
-      background: #16213e;
-      border-radius: 12px;
-      padding: 32px 24px;
+      background: linear-gradient(145deg, #16213e, #1a1a3e);
+      border-radius: 16px;
+      padding: 36px 28px;
+      border: 1px solid rgba(233, 69, 96, 0.15);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(233, 69, 96, 0.08);
+      overflow: hidden;
+      position: relative;
     }
 
     .auth-box h2 {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
       color: #e94560;
-      font-size: 1.3rem;
+      font-size: 1.4rem;
+    }
+
+    .auth-box .input-wrapper {
+      position: relative;
+      margin-bottom: 16px;
     }
 
     .auth-box input {
       width: 100%;
-      padding: 12px 16px;
-      border: 2px solid #0f3460;
-      border-radius: 8px;
-      background: #1a1a2e;
+      padding: 14px 18px;
+      border: 2px solid rgba(15, 52, 96, 0.8);
+      border-radius: 10px;
+      background: rgba(10, 10, 26, 0.6);
       color: #eee;
       font-size: 1rem;
       outline: none;
-      margin-bottom: 12px;
-      transition: border-color 0.2s;
+      transition: border-color 0.3s, box-shadow 0.3s;
     }
 
     .auth-box input:focus {
       border-color: #e94560;
+      box-shadow: 0 0 20px rgba(233, 69, 96, 0.2);
     }
 
     .auth-box .btn {
       width: 100%;
-      padding: 12px;
-      background: #e94560;
+      padding: 14px;
+      background: linear-gradient(135deg, #e94560, #c73651);
       color: #fff;
       border: none;
-      border-radius: 8px;
-      font-size: 1rem;
+      border-radius: 10px;
+      font-size: 1.05rem;
+      font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s;
-      margin-bottom: 12px;
+      letter-spacing: 1px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 20px rgba(233, 69, 96, 0.3);
     }
 
-    .auth-box .btn:hover { background: #c73651; }
     .auth-box .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .auth-toggle {
@@ -85,21 +126,33 @@
     .auth-toggle a {
       color: #e94560;
       cursor: pointer;
-      text-decoration: underline;
+      text-decoration: none;
+      font-weight: 600;
+      position: relative;
     }
+
+    .auth-toggle a::after {
+      content: '';
+      position: absolute;
+      bottom: -2px; left: 0;
+      width: 0; height: 2px;
+      background: #e94560;
+      transition: width 0.3s;
+    }
+
+    .auth-toggle a:hover::after { width: 100%; }
 
     .msg {
       text-align: center;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 16px;
       font-size: 0.9rem;
     }
 
-    .msg.error { background: #3a1525; color: #ff6b8a; }
-    .msg.success { background: #153a25; color: #6bff8a; }
+    .msg.error { background: rgba(58, 21, 37, 0.8); color: #ff6b8a; border: 1px solid rgba(255, 107, 138, 0.2); }
+    .msg.success { background: rgba(21, 58, 37, 0.8); color: #6bff8a; border: 1px solid rgba(107, 255, 138, 0.2); }
 
-    /* Header bar */
     .header-bar {
       display: flex;
       justify-content: space-between;
@@ -118,74 +171,92 @@
     }
 
     .logout-btn {
-      padding: 6px 12px;
-      background: #0f3460;
+      padding: 8px 16px;
+      background: rgba(15, 52, 96, 0.6);
       color: #aaa;
-      border: none;
-      border-radius: 6px;
+      border: 1px solid rgba(15, 52, 96, 0.8);
+      border-radius: 8px;
       cursor: pointer;
       font-size: 0.8rem;
-      transition: all 0.2s;
+      transition: all 0.3s;
     }
 
-    .logout-btn:hover { background: #e94560; color: #fff; }
+    .logout-btn:hover {
+      background: #e94560;
+      color: #fff;
+      border-color: #e94560;
+      box-shadow: 0 0 20px rgba(233, 69, 96, 0.3);
+    }
 
-    /* Todo styles */
     .input-row {
       display: flex;
-      gap: 8px;
-      margin-bottom: 24px;
+      gap: 10px;
+      margin-bottom: 28px;
     }
 
     .input-row input {
       flex: 1;
-      padding: 12px 16px;
-      border: 2px solid #16213e;
-      border-radius: 8px;
-      background: #16213e;
+      padding: 14px 18px;
+      border: 2px solid rgba(22, 33, 62, 0.8);
+      border-radius: 12px;
+      background: rgba(22, 33, 62, 0.6);
       color: #eee;
       font-size: 1rem;
       outline: none;
-      transition: border-color 0.2s;
+      transition: all 0.3s;
     }
 
-    .input-row input:focus { border-color: #e94560; }
+    .input-row input:focus {
+      border-color: #e94560;
+      box-shadow: 0 0 20px rgba(233, 69, 96, 0.15);
+    }
 
     .input-row button {
-      padding: 12px 20px;
-      background: #e94560;
+      padding: 14px 24px;
+      background: linear-gradient(135deg, #e94560, #c73651);
       color: #fff;
       border: none;
-      border-radius: 8px;
+      border-radius: 12px;
       font-size: 1rem;
+      font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s;
+      box-shadow: 0 4px 20px rgba(233, 69, 96, 0.3);
+      transition: transform 0.2s, box-shadow 0.2s;
     }
 
-    .input-row button:hover { background: #c73651; }
+    .input-row button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(233, 69, 96, 0.4);
+    }
 
     .filters {
       display: flex;
       justify-content: center;
-      gap: 8px;
-      margin-bottom: 16px;
+      gap: 10px;
+      margin-bottom: 20px;
     }
 
     .filters button {
-      padding: 6px 14px;
-      border: 1px solid #0f3460;
-      border-radius: 20px;
+      padding: 8px 18px;
+      border: 1px solid rgba(15, 52, 96, 0.6);
+      border-radius: 24px;
       background: transparent;
       color: #aaa;
       cursor: pointer;
       font-size: 0.85rem;
-      transition: all 0.2s;
+      transition: all 0.3s;
     }
 
     .filters button.active {
-      background: #0f3460;
+      background: linear-gradient(135deg, #0f3460, #16213e);
       color: #fff;
       border-color: #0f3460;
+      box-shadow: 0 0 15px rgba(15, 52, 96, 0.4);
+    }
+
+    .filters button:hover:not(.active) {
+      border-color: #e94560;
+      color: #e94560;
     }
 
     ul { list-style: none; }
@@ -193,19 +264,32 @@
     li {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
-      background: #16213e;
-      border-radius: 8px;
-      margin-bottom: 8px;
-      transition: opacity 0.2s;
+      gap: 14px;
+      padding: 14px 18px;
+      background: linear-gradient(145deg, rgba(22, 33, 62, 0.8), rgba(22, 33, 62, 0.4));
+      border-radius: 12px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(15, 52, 96, 0.3);
+      position: relative;
+      overflow: hidden;
     }
 
-    li.done span { text-decoration: line-through; opacity: 0.5; }
+    li::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0;
+      width: 3px; height: 100%;
+      background: #e94560;
+      border-radius: 3px 0 0 3px;
+      opacity: 0.6;
+    }
+
+    li.done::before { background: #0f3460; opacity: 0.3; }
+    li.done span { text-decoration: line-through; opacity: 0.4; }
 
     li input[type="checkbox"] {
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: 22px;
       accent-color: #e94560;
       cursor: pointer;
     }
@@ -215,34 +299,59 @@
     li .delete-btn {
       background: none;
       border: none;
-      color: #555;
-      font-size: 1.2rem;
+      color: #444;
+      font-size: 1.4rem;
       cursor: pointer;
-      transition: color 0.2s;
+      transition: all 0.3s;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
     }
 
-    li .delete-btn:hover { color: #e94560; }
+    li .delete-btn:hover {
+      color: #e94560;
+      background: rgba(233, 69, 96, 0.1);
+    }
 
     .empty {
       text-align: center;
-      color: #555;
-      margin-top: 32px;
+      color: #444;
+      margin-top: 40px;
+      font-size: 1.05rem;
     }
 
     .hidden { display: none; }
+
+    .check-burst {
+      position: fixed;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #e94560;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
+  <div class="bg-particles" id="bgParticles"></div>
+
   <div class="container">
 
     <!-- Auth Screen -->
     <div id="authScreen">
-      <h1>Todo App</h1>
-      <div class="auth-box">
+      <h1 id="authTitle1">Todo App</h1>
+      <div class="glow-line" id="glowLine1"></div>
+      <div class="auth-box" id="authBox">
         <h2 id="authTitle">Giris Yap</h2>
         <div id="authMsg" class="hidden"></div>
-        <input type="email" id="emailInput" placeholder="E-posta adresi">
-        <input type="password" id="passwordInput" placeholder="Sifre (min 6 karakter)">
+        <div class="input-wrapper">
+          <input type="email" id="emailInput" placeholder="E-posta adresi">
+        </div>
+        <div class="input-wrapper">
+          <input type="password" id="passwordInput" placeholder="Sifre (min 6 karakter)">
+        </div>
         <button class="btn" id="authBtn" onclick="handleAuth()">Giris Yap</button>
         <p class="auth-toggle">
           <span id="toggleText">Hesabin yok mu?</span>
@@ -254,19 +363,20 @@
     <!-- Todo Screen -->
     <div id="todoScreen" class="hidden">
       <div class="header-bar">
-        <h1>Todo App</h1>
+        <h1 id="todoTitle">Todo App</h1>
         <div class="user-info">
           <span id="userEmail"></span>
           <button class="logout-btn" onclick="logout()">Cikis</button>
         </div>
       </div>
+      <div class="glow-line" id="glowLine2"></div>
 
-      <div class="input-row">
+      <div class="input-row" id="inputRow">
         <input type="text" id="todoInput" placeholder="Yeni gorev ekle...">
         <button onclick="addTodo()">Ekle</button>
       </div>
 
-      <div class="filters">
+      <div class="filters" id="filtersRow">
         <button class="active" onclick="setFilter('all', this)">Tumu</button>
         <button onclick="setFilter('active', this)">Aktif</button>
         <button onclick="setFilter('done', this)">Tamamlanan</button>
@@ -278,10 +388,113 @@
   </div>
 
   <script>
+    // --- Background Particles ---
+    function createParticles() {
+      const container = document.getElementById('bgParticles');
+      const colors = ['#e94560', '#0f3460', '#533483', '#16213e'];
+      for (let i = 0; i < 30; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        const size = Math.random() * 6 + 2;
+        p.style.width = size + 'px';
+        p.style.height = size + 'px';
+        p.style.background = colors[Math.floor(Math.random() * colors.length)];
+        p.style.left = Math.random() * 100 + '%';
+        p.style.top = Math.random() * 100 + '%';
+        container.appendChild(p);
+        gsap.to(p, {
+          y: () => (Math.random() - 0.5) * 200,
+          x: () => (Math.random() - 0.5) * 100,
+          opacity: () => Math.random() * 0.4 + 0.1,
+          duration: () => Math.random() * 8 + 6,
+          repeat: -1, yoyo: true, ease: 'sine.inOut',
+          delay: Math.random() * 4
+        });
+      }
+    }
+    createParticles();
+
+    // --- GSAP Animations ---
+    function playAuthIntro() {
+      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+      tl.from('#authTitle1', { y: -60, autoAlpha: 0, duration: 0.8 })
+        .to('#glowLine1', { width: '60%', duration: 0.6, ease: 'power2.inOut' }, '-=0.3')
+        .from('#authBox', { y: 50, autoAlpha: 0, scale: 0.9, duration: 0.7 }, '-=0.3')
+        .from('#authTitle', { y: -20, autoAlpha: 0, duration: 0.4 }, '-=0.5')
+        .from('.input-wrapper', { x: -40, autoAlpha: 0, stagger: 0.15, duration: 0.5 }, '-=0.3')
+        .from('#authBtn', { y: 20, autoAlpha: 0, duration: 0.4 }, '-=0.2')
+        .from('.auth-toggle', { autoAlpha: 0, duration: 0.4 }, '-=0.2');
+    }
+
+    function playTodoEntrance() {
+      const tl = gsap.timeline({ defaults: { ease: 'back.out(1.7)' } });
+      tl.from('#todoTitle', { y: -40, autoAlpha: 0, duration: 0.6, ease: 'power3.out' })
+        .to('#glowLine2', { width: '60%', duration: 0.5, ease: 'power2.inOut' }, '-=0.2')
+        .from('.user-info', { x: 40, autoAlpha: 0, duration: 0.5 }, '-=0.3')
+        .from('#inputRow', { y: 30, autoAlpha: 0, duration: 0.5, ease: 'power3.out' }, '-=0.2')
+        .from('#filtersRow button', { y: 20, autoAlpha: 0, scale: 0.8, stagger: 0.1, duration: 0.4 }, '-=0.2');
+    }
+
+    function animateTodoItems() {
+      gsap.from('#todoList li', { x: -50, autoAlpha: 0, stagger: 0.08, duration: 0.5, ease: 'power2.out' });
+    }
+
+    function animateNewTodo() {
+      const items = document.querySelectorAll('#todoList li');
+      const last = items[items.length - 1];
+      if (!last) return;
+      gsap.from(last, { x: -80, autoAlpha: 0, scale: 0.8, duration: 0.5, ease: 'back.out(1.7)' });
+      gsap.fromTo('.input-row button', { scale: 1 }, { scale: 1.15, duration: 0.15, yoyo: true, repeat: 1, ease: 'power2.out' });
+    }
+
+    function animateDelete(id) {
+      return new Promise(resolve => {
+        const el = document.querySelector('[data-id="' + id + '"]');
+        if (!el) { resolve(); return; }
+        gsap.to(el, { x: 80, autoAlpha: 0, scale: 0.8, duration: 0.35, ease: 'power2.in', onComplete: resolve });
+      });
+    }
+
+    function checkBurst(checkbox) {
+      const rect = checkbox.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      for (let i = 0; i < 8; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'check-burst';
+        dot.style.left = cx + 'px';
+        dot.style.top = cy + 'px';
+        document.body.appendChild(dot);
+        const angle = (i / 8) * Math.PI * 2;
+        gsap.to(dot, { x: Math.cos(angle) * 25, y: Math.sin(angle) * 25, autoAlpha: 0, scale: 0, duration: 0.5, ease: 'power2.out', onComplete: () => dot.remove() });
+      }
+    }
+
+    function animateMsg() {
+      gsap.from('#authMsg', { y: -10, autoAlpha: 0, duration: 0.35, ease: 'power2.out' });
+    }
+
+    function animateAuthToggle() {
+      const tl = gsap.timeline();
+      tl.to('#authTitle', { y: -10, autoAlpha: 0, duration: 0.2 })
+        .to('.input-wrapper', { x: -20, autoAlpha: 0, stagger: 0.05, duration: 0.2 }, '<')
+        .to('#authBtn', { y: 10, autoAlpha: 0, duration: 0.2 }, '<')
+        .set('#authTitle', { y: 10 })
+        .set('.input-wrapper', { x: 20 })
+        .set('#authBtn', { y: -10 })
+        .to('#authTitle', { y: 0, autoAlpha: 1, duration: 0.3, ease: 'back.out(1.7)' })
+        .to('.input-wrapper', { x: 0, autoAlpha: 1, stagger: 0.08, duration: 0.3, ease: 'back.out(1.7)' }, '-=0.2')
+        .to('#authBtn', { y: 0, autoAlpha: 1, duration: 0.3, ease: 'back.out(1.7)' }, '-=0.2');
+    }
+
+    // ===========================
+    // App Logic
+    // ===========================
+
     const SUPABASE_URL = 'https://tbucmnjcmixwxajfavbi.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidWNtbmpjbWl4d3hhamZhdmJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyODI4OTAsImV4cCI6MjA4OTg1ODg5MH0.2haD4ecIdtmrXMgXmYnYdxgT2YOsjvlbcvTlSiFm-4M';
-    const API = `${SUPABASE_URL}/rest/v1/todos`;
-    const AUTH = `${SUPABASE_URL}/auth/v1`;
+    const API = SUPABASE_URL + '/rest/v1/todos';
+    const AUTH = SUPABASE_URL + '/auth/v1';
 
     let todos = [];
     let filter = 'all';
@@ -296,28 +509,28 @@
     const todoInput = document.getElementById('todoInput');
     const list = document.getElementById('todoList');
 
-    passwordInput.addEventListener('keydown', e => { if (e.key === 'Enter') handleAuth(); });
-    todoInput.addEventListener('keydown', e => { if (e.key === 'Enter') addTodo(); });
-
-    // --- Auth ---
+    passwordInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') handleAuth(); });
+    todoInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') addTodo(); });
 
     function showMsg(text, type) {
       authMsg.textContent = text;
-      authMsg.className = `msg ${type}`;
+      authMsg.className = 'msg ' + type;
       authMsg.classList.remove('hidden');
+      animateMsg();
     }
 
-    function hideMsg() {
-      authMsg.classList.add('hidden');
-    }
+    function hideMsg() { authMsg.classList.add('hidden'); }
 
     function toggleAuthMode() {
       isLogin = !isLogin;
       hideMsg();
-      document.getElementById('authTitle').textContent = isLogin ? 'Giris Yap' : 'Kayit Ol';
-      document.getElementById('authBtn').textContent = isLogin ? 'Giris Yap' : 'Kayit Ol';
-      document.getElementById('toggleText').textContent = isLogin ? 'Hesabin yok mu?' : 'Zaten hesabin var mi?';
-      document.getElementById('toggleLink').textContent = isLogin ? 'Kayit Ol' : 'Giris Yap';
+      animateAuthToggle();
+      setTimeout(function() {
+        document.getElementById('authTitle').textContent = isLogin ? 'Giris Yap' : 'Kayit Ol';
+        document.getElementById('authBtn').textContent = isLogin ? 'Giris Yap' : 'Kayit Ol';
+        document.getElementById('toggleText').textContent = isLogin ? 'Hesabin yok mu?' : 'Zaten hesabin var mi?';
+        document.getElementById('toggleLink').textContent = isLogin ? 'Kayit Ol' : 'Giris Yap';
+      }, 200);
     }
 
     async function handleAuth() {
@@ -325,28 +538,25 @@
       const password = passwordInput.value;
       hideMsg();
 
-      if (!email || !password) {
-        showMsg('E-posta ve sifre gerekli.', 'error');
-        return;
-      }
-      if (password.length < 6) {
-        showMsg('Sifre en az 6 karakter olmali.', 'error');
-        return;
-      }
+      if (!email || !password) { showMsg('E-posta ve sifre gerekli.', 'error'); return; }
+      if (password.length < 6) { showMsg('Sifre en az 6 karakter olmali.', 'error'); return; }
 
       const btn = document.getElementById('authBtn');
       btn.disabled = true;
+      gsap.to(btn, { scale: 0.96, duration: 0.1 });
 
       if (isLogin) {
-        const res = await fetch(`${AUTH}/token?grant_type=password`, {
+        const res = await fetch(AUTH + '/token?grant_type=password', {
           method: 'POST',
           headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
+          body: JSON.stringify({ email: email, password: password })
         });
         const data = await res.json();
         btn.disabled = false;
+        gsap.to(btn, { scale: 1, duration: 0.2, ease: 'back.out(1.7)' });
 
         if (data.error) {
+          gsap.to('#authBox', { x: 10, duration: 0.05, repeat: 5, yoyo: true, ease: 'none', onComplete: function() { gsap.set('#authBox', { x: 0 }); } });
           const msg = data.error_description || data.msg || data.error;
           if (msg.includes('Email not confirmed')) {
             showMsg('E-postanizi onaylamaniz gerekiyor. Gelen kutunuzu kontrol edin.', 'error');
@@ -360,21 +570,38 @@
 
         session = data;
         localStorage.setItem('sb_session', JSON.stringify(data));
-        showTodoScreen();
+
+        var tl = gsap.timeline();
+        tl.to('#authBox', { y: -30, autoAlpha: 0, scale: 0.9, duration: 0.4, ease: 'power2.in' })
+          .to('#authTitle1', { y: -20, autoAlpha: 0, duration: 0.3 }, '-=0.3')
+          .to('#glowLine1', { width: 0, duration: 0.3 }, '-=0.3')
+          .call(function() {
+            authScreen.classList.add('hidden');
+            todoScreen.classList.remove('hidden');
+            document.getElementById('userEmail').textContent = session.user.email;
+            gsap.set('#glowLine2', { width: 0 });
+            playTodoEntrance();
+            fetchTodos();
+          });
       } else {
-        const res = await fetch(`${AUTH}/signup`, {
+        const res = await fetch(AUTH + '/signup', {
           method: 'POST',
           headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
+          body: JSON.stringify({ email: email, password: password })
         });
         const data = await res.json();
         btn.disabled = false;
+        gsap.to(btn, { scale: 1, duration: 0.2, ease: 'back.out(1.7)' });
 
         if (data.error) {
+          gsap.to('#authBox', { x: 10, duration: 0.05, repeat: 5, yoyo: true, ease: 'none', onComplete: function() { gsap.set('#authBox', { x: 0 }); } });
           showMsg(data.error_description || data.msg || data.error, 'error');
           return;
         }
 
+        gsap.fromTo('#authBox',
+          { boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(233,69,96,0.08)' },
+          { boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 60px rgba(107,255,138,0.3)', duration: 0.5, yoyo: true, repeat: 1 });
         showMsg('Kayit basarili! Lutfen e-postaniza gelen onay linkine tiklayin.', 'success');
         emailInput.value = '';
         passwordInput.value = '';
@@ -384,7 +611,7 @@
     function getAuthHeaders() {
       return {
         'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${session.access_token}`,
+        'Authorization': 'Bearer ' + session.access_token,
         'Content-Type': 'application/json',
         'Prefer': 'return=representation'
       };
@@ -392,7 +619,7 @@
 
     async function refreshToken() {
       if (!session || !session.refresh_token) return false;
-      const res = await fetch(`${AUTH}/token?grant_type=refresh_token`, {
+      const res = await fetch(AUTH + '/token?grant_type=refresh_token', {
         method: 'POST',
         headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify({ refresh_token: session.refresh_token })
@@ -407,31 +634,42 @@
       authScreen.classList.add('hidden');
       todoScreen.classList.remove('hidden');
       document.getElementById('userEmail').textContent = session.user.email;
+      gsap.set('#glowLine2', { width: 0 });
+      playTodoEntrance();
       fetchTodos();
     }
 
     function logout() {
-      session = null;
-      todos = [];
-      localStorage.removeItem('sb_session');
-      todoScreen.classList.add('hidden');
-      authScreen.classList.remove('hidden');
-      hideMsg();
-      emailInput.value = '';
-      passwordInput.value = '';
+      var tl = gsap.timeline();
+      tl.to('#todoList li', { x: 50, autoAlpha: 0, stagger: 0.03, duration: 0.25, ease: 'power2.in' })
+        .to('#inputRow', { y: -20, autoAlpha: 0, duration: 0.3 }, '-=0.15')
+        .to('#filtersRow', { y: -10, autoAlpha: 0, duration: 0.2 }, '-=0.2')
+        .to('.header-bar', { y: -20, autoAlpha: 0, duration: 0.3 }, '-=0.2')
+        .to('#glowLine2', { width: 0, duration: 0.2 }, '-=0.2')
+        .call(function() {
+          session = null;
+          todos = [];
+          localStorage.removeItem('sb_session');
+          todoScreen.classList.add('hidden');
+          authScreen.classList.remove('hidden');
+          hideMsg();
+          emailInput.value = '';
+          passwordInput.value = '';
+          gsap.set(['.header-bar', '#inputRow', '#filtersRow', '#filtersRow button'], { clearProps: 'all' });
+          playAuthIntro();
+        });
     }
 
-    // --- Todos ---
-
     async function fetchTodos() {
-      const res = await fetch(`${API}?order=created_at.asc`, { headers: getAuthHeaders() });
+      const res = await fetch(API + '?order=created_at.asc', { headers: getAuthHeaders() });
       if (res.status === 401) {
         if (await refreshToken()) return fetchTodos();
         logout();
         return;
       }
       todos = await res.json();
-      render();
+      renderTodos();
+      animateTodoItems();
     }
 
     async function addTodo() {
@@ -441,24 +679,26 @@
       const res = await fetch(API, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ text, done: false, user_id: session.user.id })
+        body: JSON.stringify({ text: text, done: false, user_id: session.user.id })
       });
       if (res.status === 401) {
         if (await refreshToken()) return addTodo();
         logout();
         return;
       }
-      const [newTodo] = await res.json();
-      todos.push(newTodo);
-      render();
+      const result = await res.json();
+      todos.push(result[0]);
+      renderTodos();
+      animateNewTodo();
     }
 
-    async function toggleTodo(id) {
-      const todo = todos.find(t => t.id === id);
+    async function toggleTodo(id, checkbox) {
+      const todo = todos.find(function(t) { return t.id === id; });
       if (!todo) return;
       todo.done = !todo.done;
-      render();
-      await fetch(`${API}?id=eq.${id}`, {
+      if (todo.done) checkBurst(checkbox);
+      renderTodos();
+      await fetch(API + '?id=eq.' + id, {
         method: 'PATCH',
         headers: getAuthHeaders(),
         body: JSON.stringify({ done: todo.done })
@@ -466,83 +706,90 @@
     }
 
     async function deleteTodo(id) {
-      todos = todos.filter(t => t.id !== id);
-      render();
-      await fetch(`${API}?id=eq.${id}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders()
-      });
+      await animateDelete(id);
+      todos = todos.filter(function(t) { return t.id !== id; });
+      renderTodos();
+      await fetch(API + '?id=eq.' + id, { method: 'DELETE', headers: getAuthHeaders() });
     }
 
     function setFilter(f, btn) {
       filter = f;
-      document.querySelectorAll('.filters button').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.filters button').forEach(function(b) { b.classList.remove('active'); });
       btn.classList.add('active');
-      render();
+      gsap.fromTo(btn, { scale: 0.9 }, { scale: 1, duration: 0.3, ease: 'back.out(2)' });
+      renderTodos();
+      animateTodoItems();
     }
 
-    function render() {
-      const filtered = todos.filter(t => {
+    function renderTodos() {
+      var filtered = todos.filter(function(t) {
         if (filter === 'active') return !t.done;
         if (filter === 'done') return t.done;
         return true;
       });
 
+      // Clear existing content safely
+      while (list.firstChild) list.removeChild(list.firstChild);
+
       if (filtered.length === 0) {
-        list.innerHTML = '<p class="empty">Gorev yok</p>';
+        var emptyP = document.createElement('p');
+        emptyP.className = 'empty';
+        emptyP.textContent = 'Gorev yok';
+        list.appendChild(emptyP);
+        gsap.from(emptyP, { autoAlpha: 0, y: 20, duration: 0.4 });
         return;
       }
 
-      list.innerHTML = filtered.map(t => `
-        <li class="${t.done ? 'done' : ''}">
-          <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTodo(${t.id})">
-          <span>${t.text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
-          <button class="delete-btn" onclick="deleteTodo(${t.id})">&times;</button>
-        </li>
-      `).join('');
+      filtered.forEach(function(t) {
+        var li = document.createElement('li');
+        li.setAttribute('data-id', t.id);
+        if (t.done) li.className = 'done';
+
+        var cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = t.done;
+        cb.addEventListener('change', function() { toggleTodo(t.id, cb); });
+
+        var span = document.createElement('span');
+        span.textContent = t.text;
+
+        var delBtn = document.createElement('button');
+        delBtn.className = 'delete-btn';
+        delBtn.innerHTML = '&times;';
+        delBtn.addEventListener('click', function() { deleteTodo(t.id); });
+
+        li.appendChild(cb);
+        li.appendChild(span);
+        li.appendChild(delBtn);
+        list.appendChild(li);
+      });
     }
 
     // --- Handle email confirmation redirect ---
     async function handleEmailConfirmation() {
-      const params = new URLSearchParams(window.location.search);
-      const confirmationUrl = params.get('confirmation_url');
+      var params = new URLSearchParams(window.location.search);
+      var confirmationUrl = params.get('confirmation_url');
       if (confirmationUrl) {
-        // Call the Supabase confirmation URL in the background
-        const res = await fetch(confirmationUrl, { redirect: 'follow' });
-        // Clean up the URL
+        await fetch(confirmationUrl, { redirect: 'follow' });
         window.history.replaceState({}, '', window.location.pathname);
-
-        // Check if we got tokens in the hash after redirect
-        if (window.location.hash) {
-          return handleHashTokens();
-        }
-
+        if (window.location.hash) return handleHashTokens();
         showMsg('E-postaniz onaylandi! Simdi giris yapabilirsiniz.', 'success');
         return true;
       }
-
-      // Handle hash-based token response (Supabase redirects with #access_token=...)
       if (window.location.hash && window.location.hash.includes('access_token')) {
         return handleHashTokens();
       }
-
       return false;
     }
 
     function handleHashTokens() {
-      const hash = window.location.hash.substring(1);
-      const params = new URLSearchParams(hash);
-      const accessToken = params.get('access_token');
-      const refreshTokenVal = params.get('refresh_token');
-
+      var hash = window.location.hash.substring(1);
+      var params = new URLSearchParams(hash);
+      var accessToken = params.get('access_token');
+      var refreshTokenVal = params.get('refresh_token');
       if (accessToken) {
-        // Decode the JWT to get user info
-        const payload = JSON.parse(atob(accessToken.split('.')[1]));
-        session = {
-          access_token: accessToken,
-          refresh_token: refreshTokenVal,
-          user: { id: payload.sub, email: payload.email }
-        };
+        var payload = JSON.parse(atob(accessToken.split('.')[1]));
+        session = { access_token: accessToken, refresh_token: refreshTokenVal, user: { id: payload.sub, email: payload.email } };
         localStorage.setItem('sb_session', JSON.stringify(session));
         window.history.replaceState({}, '', window.location.pathname);
         showTodoScreen();
@@ -553,18 +800,13 @@
 
     // --- Init ---
     (async function init() {
-      // First check for email confirmation or hash tokens
-      if (await handleEmailConfirmation()) return;
-
-      // Then check for saved session
-      const saved = localStorage.getItem('sb_session');
+      if (await handleEmailConfirmation()) { playAuthIntro(); return; }
+      var saved = localStorage.getItem('sb_session');
       if (saved) {
         session = JSON.parse(saved);
-        if (await refreshToken()) {
-          showTodoScreen();
-        } else {
-          logout();
-        }
+        if (await refreshToken()) { showTodoScreen(); } else { logout(); }
+      } else {
+        playAuthIntro();
       }
     })();
   </script>
